@@ -23,9 +23,9 @@ int start_game()
 	int count=-1;
 	protocol p;
 	p.flag=ENTER_ROOM;
-	send(sockfd,&p,sizeof(protocol),0);
+	
 	while(1){
-		
+		send(sockfd,&p,sizeof(protocol),0);
 		recv(sockfd,&p,sizeof(protocol),0);
 		switch(p.flag){
 			case SUB_QUES: 	printf("sub ques\n");
@@ -33,22 +33,28 @@ int start_game()
 							in_cauhoi(p.ch);
 							p.answer=get_answer();
 							break;
-			case QUES: 	p.flag = ANSWER;
+			// case QUES: 	
+						/*p.flag = ANSWER;
 						in_cauhoi(p.ch);
 						p.answer=get_answer();
-						count++;break;
+						count++;break;*/
 			case WRONG_ANSWER: printf("Wrong answer !!\n");
 								break;
+			case MUON: printf("you had answered too late\n");
+
 		}
-		send(sockfd,&p,sizeof(protocol),0);
-		// if(p.flag==FULL){
-		// 	printf("full phong roi\n");
-		// 	break;
-		// }
-		// if(p.flag == WRONG_ANSWER){
-		// 	printf("End Game :( :( :(\n");
-		// 	break;
-		// }
+		if(p.flag==QUES){
+			printf("win nhe\n");
+			break;
+		}
+		if(p.flag==FULL){
+			printf("full phong roi\n");
+			break;
+		}
+		if((p.flag == WRONG_ANSWER)||(p.flag==MUON)){
+			printf("End Game :( :( :(\n");
+			break;
+			}
 		// if(p.flag == WIN){
 		// 	printf("CONGRATULATION, YOU ARE THE MILLIONAIRE!!!");
 		// }

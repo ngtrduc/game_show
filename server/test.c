@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "lib/cauhoi.h"
-	int client[10]={-1};
+int check=0;
 
 void ch_to_pro(protocol *p,cauhoi ch)
 {
@@ -10,7 +10,7 @@ void ch_to_pro(protocol *p,cauhoi ch)
     strcpy(p->ch.dapan3,ch.dapan3);
     strcpy(p->ch.dapan4,ch.dapan4);
     p->ch.dapan_dung=ch.dapan_dung;
-}
+}   
 void play_phu(cauhoi *ch)
 {
     protocol p;
@@ -19,20 +19,32 @@ void play_phu(cauhoi *ch)
     in_cauhoi(p.ch);
     free(ch);
 }
-check_dapan(cauhoi ch,char dap_an)
+
+check_dapan(cauhoi *ch,char dap_an)
 {
-    if (ch.dapan_dung==dap_an) return 1;
+    if (ch->dapan_dung==dap_an) return 1;
     else return 0;
+}
+void check_main_p(protocol *p, cauhoi *ch)
+{
+    if(check_dapan(ch,p->answer)){
+        if(check==0){
+            p->flag=QUES;
+            check=1;
+        }else p->flag=MUON;
+
+    }else p->flag=WRONG_ANSWER;
+
 }
 int main()
 {
-	int i;
-	// char a;
-	// cauhoi *ch;
-	// ch=lay_cauhoi(1,0);
-	// play_phu(ch);
-	// scanf("%c",&a);
-	// if(check_dapan(ch[0],a)) printf("dung\n");
-	// else printf("sai\n");
-	for(i=0;i<10;i++) printf("%d\n",client[i] );
+    protocol p;
+    char dap_an;
+    cauhoi *ch;
+    ch=lay_cauhoi(1,0);
+    p.answer='c';
+    check_main_p(&p,ch);
+    printf("%d",p.flag);
+        check_main_p(&p,ch);
+    printf("%d",p.flag);
 }

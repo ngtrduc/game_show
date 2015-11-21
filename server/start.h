@@ -16,16 +16,12 @@
 #define PORT 5500
 #define MAX_PLAYER 2
 
-typedef struct answer{
-    char answ;
-    int player;
-}answer;
 //-----------------------------------------
 int listenSock;
 int client[FULL_CLIENT];
 int player[MAX_PLAYER];
 fd_set readfds;
-
+int check=0;
 //-----------------------------------------------
 
 
@@ -74,31 +70,40 @@ void play_phu(cauhoi *ch)
     p.flag=SUB_QUES;
     ch_to_pro(&p,ch[0]);
 
-    for(i=0;i<=MAX_PLAYER;i++){
+    for(i=0;i<MAX_PLAYER;i++){
         send(player[i],&p,sizeof(protocol),0);
     }
     
 }
 
-check_dapan(cauhoi ch,char dap_an)
+int check_dapan(cauhoi *ch,char dap_an)
 {
-    if (ch.dapan_dung==dap_an) return 1;
+    if (ch->dapan_dung==dap_an) return 1;
     else return 0;
 }
+void check_main_p(protocol *p, cauhoi *ch)
+{
+    if(check_dapan(ch,p->answer)){
+        if(check==0){
+            p->flag=QUES;
+            check=1;
+        }else p->flag=MUON;
 
+    }else p->flag=WRONG_ANSWER;
+
+}
 int start_server()
 {   
 
-    int check=0;
     cauhoi *ch;
-    int connSock;
+    int connSock,a=0;
     int j=0,main_socket,i,k=0;
     int max_sd,sd,nEvents;
     struct sockaddr_in address;  
     int addrlen = sizeof(address);
     for(i=0;i<=FULL_CLIENT;i++) client[i]=-1;
     protocol p;
-    answer a[MAX_PLAYER];
+
 
     create_listenSock(PORT);
 
@@ -149,49 +154,46 @@ int start_server()
             if (FD_ISSET( sd , &readfds)) 
             {
                 
-                if (recv( sd , &p,sizeof(protocol),0) == 0)
+                if (recv( sd , &p,sizeof(protocol),0) == 0) //m sua lai sau
                 {
                    
                     printf("Client disconnected...\n"); 
                     close( sd );
                     client[i] = -1;
-                }
+                } 
                 else{
                     switch(p.flag){
                     case LOGIN: s_login(&p);
                             break;
                     case SIGNUP: s_signup(&p);
                             break;
-                    case ENTER_ROOM:if(j==MAX_PLAYER) p.flag=FULL;
+                    case ENTER_ROOM:
+                                    if(j==MAX_PLAYER) p.flag=FULL;
                                     if(j<MAX_PLAYER){
                                         player[j]=sd;j++;
                                         printf("we have %d player\n",j);
                                     }
                                     break;
-                    case SUB_ANSWER: a[k].answ=p.answer;
-                                     a[k].player=sd;
-                                     k++; break;
-                                 
-                }
-                if(p.flag!=ENTER_ROOM) send(sd,&p,sizeof(protocol),0);
+                                    //khi co 2 player chon enter_room thi se gui cau hoi cho 2 thang day
+                    case SUB_ANSWER: check_main_p(&p,ch);
+                                    printf("%d\n",p.flag);
+                                    k++;
+                                    printf("%d\n",k);
+                                    if(k==MAX_PLAYER){k=0;check=0;j=0;a=0;}
+                                    
+                    }
+                
+                    if((j==MAX_PLAYER)&&(a==0)){
+                            ch=lay_cauhoi(1,0);
+                            play_phu(ch);
+                            a=1;
+                    }else{
+                         if(p.flag!=ENTER_ROOM) send(sd,&p,sizeof(protocol),0);
+                    }
+                   
                 }
                 
             }
-        }
-        if(j==MAX_PLAYER){
-                ch=lay_cauhoi(1,0);
-                if(check==0) play_phu(ch);
-                check=1;
-            }
-        if(k==MAX_PLAYER){
-           for(k=0;k<=MAX_PLAYER;k++) {
-                if(check_dapan(ch[0],a[k].answ)) main_socket=a[k].player;
-            }
-            printf("nguoi chien thang la nguoi choi %d",main_socket);
-            check =0;
-            j=0;
-            k=0;
-        }
+        }//day la doan code de gui cho 2 thang day
     }
-
 }

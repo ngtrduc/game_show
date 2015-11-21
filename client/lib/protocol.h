@@ -12,7 +12,7 @@
 #define NO_ACCOUNT 12
 #define FULL 13
 #define WIN 14
-#define SUB_ANSWER 16
+#define MUON 15
 typedef struct user {
 	char account[32];
 	char password[32];
