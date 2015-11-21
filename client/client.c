@@ -1,10 +1,28 @@
-#include <arpa/inet.h> 
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <arpa/inet.h>
+#include "lib/error.h"
+#include "start.h"
+#include "lib/login_signup.h"
 
-enum {SUCCESS,FAIL};
 
+//-----------------------------
+#define FAIL -1
+#define BUFF_SIZE 256
+//-----------------------------
+
+
+
+//-----------------------------
 int create_connection(int PORT,char IP[10])
 {
-	int sockfd;
 	struct sockaddr_in serverAddr;
 	sockfd = socket(AF_INET,SOCK_STREAM,0);
 	if(sockfd<0){
@@ -20,18 +38,39 @@ int create_connection(int PORT,char IP[10])
 	return FAIL;
 	}
 	printf("server duoc ket noi thanh cong ...\n");
-	return sockfd;
+	return SUCCESS;
 }
 int main()
 {
-	int sockfd=create_connection(5500,"127.0.0.1");
-	int n;
-	printf("1.LOGIN\n");
-	printf("2.SIGNUP\n");
+	create_connection(5500,"127.0.0.1");
+	int n,t;
+	protocol p;
+	do{
+		// bien t de check trang thai cua signup
+		t=-1;
+		printf("1.LOGIN\n");
+		printf("2.SIGNUP\n");
+		
+		printf("4.QUIT\n");
+		scanf("%d",&n);
+		while(getchar()!='\n');
+		switch(n){
+			case 1: c_login(&p);
+					break;
+			case 2: t=c_signup(&p);
+					break;
+		}
+		if(t==SIGNUP_FAIL) continue;
+		send(sockfd,&p,sizeof(protocol),0);
+		recv(sockfd,&p,sizeof(protocol),0);
+		switch(p.flag){
+			case SUCCESS: printf("Login success!!\n"); start(); break;
+			case LOGIN_FAIL: printf("%s",LOGIN_ERROR);
+							 break; 
+			case SIGNUP_FAIL: printf("%s",SIGNUP_ERROR2);
+		}
+
+	}while(n!=4);
 	
-	printf("4.QUIT\n");
-	scanf("%d",&n);
-	while(getchar()!='\n');
-	if(n==1) login(sockfd);
 	
 }

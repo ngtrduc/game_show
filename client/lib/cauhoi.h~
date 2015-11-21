@@ -1,15 +1,24 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "protocol.h"
+#include <unistd.h>
+#include <poll.h>
 
-struct cauhoi{
-	char cauhoi[100];
-	char dapan1[20];
-	char dapan2[20];
-	char dapan3[20];
-	char dapan4[20];
-	char dapan_dung;
-};
+
+#define TIME_OUT 15000
+char get_answer()
+{
+    struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
+    char answer;
+
+    if( poll(&mypoll, 1, TIME_OUT) )
+    {
+        scanf("%c", answer);
+        return answer;
+    }
+    else return 'F';
+}
 struct cauhoi nhap_cauhoi(i)
 {
 	struct cauhoi ch;
@@ -60,7 +69,7 @@ struct cauhoi *lay_cauhoi(int set,int vi_tri)
 	ch=(struct cauhoi*)malloc(sizeof(struct cauhoi));
 	fp= fopen(bo_cauhoi,"r+b");
 	if(fp==NULL){
-		printf("khong ton tai bx`o cau hoi tren.\n");
+		printf("khong ton tai bo cau hoi tren.\n");
 		return NULL;
 	}
 	if(fseek(fp,vi_tri*sizeof(struct cauhoi),SEEK_SET)!=0){
@@ -71,7 +80,7 @@ struct cauhoi *lay_cauhoi(int set,int vi_tri)
 	fclose(fp);
 	return ch;
 }
-void in_cauhoi(struct cauhoi ch)
+void in_cauhoi(cauhoi ch)
 {
 	printf("%s\n",ch.cauhoi );
 	printf("1.%s\n",ch.dapan1);
@@ -79,35 +88,4 @@ void in_cauhoi(struct cauhoi ch)
 	printf("3.%s\n",ch.dapan3);
 	printf("4.%s\n",ch.dapan4);
 }
-int main()
-{
-	int bo_cauhoi;
-	struct cauhoi *ch;
-	char temp[5];
-	int check,vi_tri;
-	while(1){
-		printf("1.them cau hoi\n");
-		printf("2.xem cau hoi trong bo cau hoi\n");
-		scanf("%d",&check);
-		while(getchar()!='\n');
-		if(check ==1){
-			do{
-			them_cauhoi();
-			printf("ban muon tao them bo cau hoi nua khong (y/n)\n");
-			gets(temp);
-			}while(!strcmp(temp,"y"));
-			continue;
-		}
-		if(check ==2){
-			ch=(struct cauhoi*)malloc(sizeof(struct cauhoi));
-			printf("nhap bo cau hoi muon xem\n");
-			scanf("%d",&bo_cauhoi);
-			printf("nhap vi tri trong bo cau hoi\n");
-			scanf("%d",&vi_tri);
-			ch=lay_cauhoi(bo_cauhoi,vi_tri);
-			in_cauhoi(ch[0]);
-		}
-		
-	}
-	
-}
+
