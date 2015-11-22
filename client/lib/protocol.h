@@ -13,6 +13,7 @@
 #define FULL 13
 #define WIN 14
 #define MUON 15
+
 typedef struct user {
 	char account[32];
 	char password[32];
@@ -31,5 +32,6 @@ typedef struct protocol{
 	cauhoi ch;
 	char answer;
 	int score;
+	int count;
 
 }protocol;

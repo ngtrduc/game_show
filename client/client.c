@@ -49,9 +49,8 @@ int main()
 		// bien t de check trang thai cua signup
 		t=-1;
 		printf("1.LOGIN\n");
-		printf("2.SIGNUP\n");
-		
-		printf("4.QUIT\n");
+		printf("2.SIGNUP\n");		
+		printf("3.QUIT\n");
 		scanf("%d",&n);
 		while(getchar()!='\n');
 		switch(n){
@@ -65,12 +64,15 @@ int main()
 		recv(sockfd,&p,sizeof(protocol),0);
 		switch(p.flag){
 			case SUCCESS: printf("Login success!!\n"); start(); break;
+			case NO_ACCOUNT: printf("%s",LOGIN_ERROR);
+							 break; 
 			case LOGIN_FAIL: printf("%s",LOGIN_ERROR);
 							 break; 
 			case SIGNUP_FAIL: printf("%s",SIGNUP_ERROR2);
+
 		}
 
-	}while(n!=4);
+	}while(n!=3);
 	
 	
 }

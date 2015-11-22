@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "lib/cauhoi.h"
+
 int check=0;
+     int MAX_QUES=4;
 
 void ch_to_pro(protocol *p,cauhoi ch)
 {
@@ -36,15 +39,10 @@ void check_main_p(protocol *p, cauhoi *ch)
     }else p->flag=WRONG_ANSWER;
 
 }
+
 int main()
 {
-    protocol p;
-    char dap_an;
-    cauhoi *ch;
-    ch=lay_cauhoi(1,0);
-    p.answer='c';
-    check_main_p(&p,ch);
-    printf("%d",p.flag);
-        check_main_p(&p,ch);
-    printf("%d",p.flag);
+    char x;
+    x=get_answer();
+    printf("%c",x);
 }

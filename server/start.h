@@ -15,13 +15,14 @@
 #define FULL_CLIENT 10
 #define PORT 5500
 #define MAX_PLAYER 2
-
+#define MAX_QUES 4
 //-----------------------------------------
 int listenSock;
 int client[FULL_CLIENT];
 int player[MAX_PLAYER];
 fd_set readfds;
 int check=0;
+
 //-----------------------------------------------
 
 
@@ -86,16 +87,31 @@ void check_main_p(protocol *p, cauhoi *ch)
     if(check_dapan(ch,p->answer)){
         if(check==0){
             p->flag=QUES;
+            p->count=1;
             check=1;
         }else p->flag=MUON;
 
     }else p->flag=WRONG_ANSWER;
 
 }
+// int main_play(protocol *p,cauhoi *ch)
+// {
+//     int vitri;
+//     srand(time(NULL));
+//     vitri=rand()%9;
+//     ch=lay_cauhoi(count,vitri);
+//     ch_to_pro(p,ch[0]);
+//     count++;
+//     if(count==MAX_QUES+1) {
+//         p->flag=WIN;
+//         count=1;
+//     }
+// }
+
 int start_server()
 {   
 
-    cauhoi *ch;
+    cauhoi *ch,*main_ch;
     int connSock,a=0;
     int j=0,main_socket,i,k=0;
     int max_sd,sd,nEvents;
@@ -156,7 +172,7 @@ int start_server()
                 
                 if (recv( sd , &p,sizeof(protocol),0) == 0) //m sua lai sau
                 {
-                   
+                    
                     printf("Client disconnected...\n"); 
                     close( sd );
                     client[i] = -1;
@@ -176,15 +192,37 @@ int start_server()
                                     break;
                                     //khi co 2 player chon enter_room thi se gui cau hoi cho 2 thang day
                     case SUB_ANSWER: check_main_p(&p,ch);
-                                    printf("%d\n",p.flag);
                                     k++;
-                                    printf("%d\n",k);
-                                    if(k==MAX_PLAYER){k=0;check=0;j=0;a=0;}
+                                    if(k==MAX_PLAYER){k=0;check=0;}
+                                    break;
+                    case ANSWER: 
+                                        if(check_dapan(main_ch,p.answer)){
+                                        if(p.count==MAX_QUES){
+                                          p.flag=WIN;
+                                          j=0;a=0;
+                                          p.count=1;
+                                        }else {
+                                            p.flag=QUES;
+                                            p.count++;
+                                        }
+                   
+                                    }           
+                                 else {p.flag=WRONG_ANSWER;p.count=1;a=0;j=0;}
+
+                                 break;
+                    
+
                                     
                     }
-                
+                    if(p.flag==QUES){
+                        srand(time(NULL));
+                        int vitri=rand()%9;
+                        main_ch=lay_cauhoi(p.count,vitri);
+                        ch_to_pro(&p,main_ch[0]);
+                    }
                     if((j==MAX_PLAYER)&&(a==0)){
-                            ch=lay_cauhoi(1,0);
+                            srand(time(NULL));
+                            ch=lay_cauhoi(1,rand()%9);
                             play_phu(ch);
                             a=1;
                     }else{
@@ -194,6 +232,6 @@ int start_server()
                 }
                 
             }
-        }//day la doan code de gui cho 2 thang day
+        }
     }
 }
