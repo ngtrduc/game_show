@@ -84,7 +84,8 @@ struct cauhoi *lay_cauhoi(int set,int vi_tri)
 }
 void in_cauhoi(cauhoi ch)
 {
-	printf("  %s\n",ch.cauhoi );
+	printf("  %s\n\n",ch.cauhoi );
+	printf("---------------------------------------\n");
 	printf("\tA.%s\n",ch.dapan1);
 	printf("\tB.%s\n",ch.dapan2);
 	printf("\tC.%s\n",ch.dapan3);

@@ -14,7 +14,7 @@
 
 #define FULL_CLIENT 10
 #define PORT 5500
-#define MAX_PLAYER 2
+#define MAX_PLAYER 3
 #define MAX_QUES 4
 //-----------------------------------------
 int listenSock;
@@ -94,19 +94,6 @@ void check_main_p(protocol *p, cauhoi *ch)
     }else p->flag=WRONG_ANSWER;
 
 }
-// int main_play(protocol *p,cauhoi *ch)
-// {
-//     int vitri;
-//     srand(time(NULL));
-//     vitri=rand()%9;
-//     ch=lay_cauhoi(count,vitri);
-//     ch_to_pro(p,ch[0]);
-//     count++;
-//     if(count==MAX_QUES+1) {
-//         p->flag=WIN;
-//         count=1;
-//     }
-// }
 
 int start_server()
 {   
@@ -118,7 +105,7 @@ int start_server()
     struct sockaddr_in address;  
     int addrlen = sizeof(address);
     for(i=0;i<=FULL_CLIENT;i++) client[i]=-1;
-    protocol p;
+    protocol p[FULL_CLIENT];
 
 
     create_listenSock(PORT);
@@ -170,55 +157,65 @@ int start_server()
             if (FD_ISSET( sd , &readfds)) 
             {
                 
-                if (recv( sd , &p,sizeof(protocol),0) == 0) //m sua lai sau
+                if (recv( sd , &p[i],sizeof(protocol),0) == 0) //m sua lai sau
                 {
-                    
+                    if(p[i].flag==ENTER_ROOM){
+                        j--;
+                        if(j==0) a=0;
+                    }
+                    if(p[i].flag==QUES) {
+                        j=0;a=0;
+                    }
                     printf("Client disconnected...\n"); 
                     close( sd );
                     client[i] = -1;
                 } 
                 else{
-                    switch(p.flag){
-                    case LOGIN: s_login(&p);
+                    switch(p[i].flag){
+                    case LOGIN: s_login(&p[i]);
                             break;
-                    case SIGNUP: s_signup(&p);
+                    case SIGNUP: s_signup(&p[i]);
                             break;
                     case ENTER_ROOM:
-                                    if(j==MAX_PLAYER) p.flag=FULL;
+                                    if((j==MAX_PLAYER)||(a==1)) p[i].flag=FULL;
                                     if(j<MAX_PLAYER){
                                         player[j]=sd;j++;
                                         printf("we have %d player\n",j);
                                     }
                                     break;
                                     //khi co 2 player chon enter_room thi se gui cau hoi cho 2 thang day
-                    case SUB_ANSWER: check_main_p(&p,ch);
+                    case SUB_ANSWER: check_main_p(&p[i],ch);
                                     k++;
+                                    if(p[i].flag==WRONG_ANSWER){
+                                        j--;
+                                        if(j==0) a=0;
+                                    }
                                     if(k==MAX_PLAYER){k=0;check=0;}
                                     break;
                     case ANSWER: 
-                                        if(check_dapan(main_ch,p.answer)){
-                                        if(p.count==MAX_QUES){
-                                          p.flag=WIN;
+                                        if(check_dapan(main_ch,p[i].answer)){
+                                        if(p[i].count==MAX_QUES){
+                                          p[i].flag=WIN;
                                           j=0;a=0;
-                                          p.count=1;
+                                          p[i].count=1;
                                         }else {
-                                            p.flag=QUES;
-                                            p.count++;
+                                            p[i].flag=QUES;
+                                            p[i].count++;
                                         }
                    
                                     }           
-                                 else {p.flag=WRONG_ANSWER;p.count=1;a=0;j=0;}
+                                 else {p[i].flag=WRONG_ANSWER;p[i].count=1;a=0;j=0;}
 
                                  break;
                     
 
                                     
                     }
-                    if(p.flag==QUES){
+                    if(p[i].flag==QUES){
                         srand(time(NULL));
                         int vitri=rand()%9;
-                        main_ch=lay_cauhoi(p.count,vitri);
-                        ch_to_pro(&p,main_ch[0]);
+                        main_ch=lay_cauhoi(p[i].count,vitri);
+                        ch_to_pro(&p[i],main_ch[0]);
                     }
                     if((j==MAX_PLAYER)&&(a==0)){
                             srand(time(NULL));
@@ -226,7 +223,7 @@ int start_server()
                             play_phu(ch);
                             a=1;
                     }else{
-                         if(p.flag!=ENTER_ROOM) send(sd,&p,sizeof(protocol),0);
+                         if(p[i].flag!=ENTER_ROOM) send(sd,&p[i],sizeof(protocol),0);
                     }
                    
                 }

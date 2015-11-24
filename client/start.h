@@ -1,5 +1,5 @@
 #include "lib/cauhoi.h"
-#include "test.h"
+#include "lib/test.h"
 
 
 int sockfd;
@@ -61,14 +61,19 @@ int start_game()
 		send(sockfd,&p,sizeof(protocol),0);
 		recv(sockfd,&p,sizeof(protocol),0);
 		switch(p.flag){
-			case SUB_QUES: 	printf("Phan choi cau hoi phu\n");
+			case SUB_QUES: 	printf("Da du so luong nguoi choi\n");
+							delay();
+							printf("phan choi cau hoi phu bat dau\n");
 							p.flag = SUB_ANSWER;
 							in_cauhoi(p.ch);
 							p.answer=get_answer(TIME_OUT);
 							
 							break;
 			case QUES: 	printf("		Correct!!\n");
+						get_answer(1000);
 						if(check==1){
+							printf("Chuc mung ban da la nguoi choi chinh\n");
+							get_answer(1000);
 							delay();
 							check=0;
 						}
@@ -78,7 +83,9 @@ int start_game()
 						p.answer=get_answer(TIME_OUT);
 						count=p.count;
 						break;
-			case WRONG_ANSWER: printf("Wrong answer !!\n");
+			case WRONG_ANSWER:  if(p.answer=='F'){
+									printf("%s\n",TIME_OUT_ERROR);
+								}else printf("Wrong answer !!\n");
 								break;
 			case MUON: printf("you had answered too late\n");
 
@@ -89,7 +96,7 @@ int start_game()
 			break;
 		}
 		if(p.flag==FULL){
-			printf("Full room, please try again later\n\n");
+			printf("%s\n\n",FULL_ROOM);
 			break;
 		}
 		if((p.flag == WRONG_ANSWER)||(p.flag==MUON)){
