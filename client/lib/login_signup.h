@@ -1,3 +1,40 @@
+static struct termios old, new;
+void initTermios(int echo) {
+	tcgetattr(0, &old);                       
+	new = old;                                
+	new.c_lflag &= ~ICANON;                   
+	new.c_lflag &= echo ? ECHO : ~ECHO;       
+	tcsetattr(0, TCSANOW, &new);              
+}
+
+void resetTermios(void) {
+  tcsetattr(0, TCSANOW, &old);
+}
+
+char getch_(int echo) {
+	char ch;
+	initTermios(echo);
+	ch = getchar();
+	resetTermios();
+	return ch;
+}
+
+char getch(void) {
+    return getch_(0);
+}
+
+int get_pass(char pass[]){
+	int i=0;
+
+	while(1){
+		pass[i]=getch();
+		if(pass[i]== '\n') break;
+		i++;
+	}
+	pass[i]='\0';
+	return 1;
+}
+
 
 #define SIGNUP_SUCCESS 12
 int check_user(user u)
@@ -60,7 +97,7 @@ void c_login(protocol *p)
 	printf("Account:\n");
 	gets(p->u.account);
 	printf("Password:\n");
-	gets(p->u.password);
+	get_pass(p->u.password);
 }
 
 int c_signup(protocol *p)
@@ -69,13 +106,12 @@ int c_signup(protocol *p)
 	char temp[32];
 	p->flag = SIGNUP;
 	do{
-
 		printf("Account:\n");
 		gets(p->u.account);
 		printf("Password:\n");
-		gets(p->u.password);
+		get_pass(p->u.password);
 		printf("Comfirmation:\n");
-		gets(temp);
+		get_pass(temp);
 		if(!strcmp(p->u.password,temp)){
 			return SUCCESS;
 		}

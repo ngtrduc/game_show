@@ -13,7 +13,7 @@
 #define FULL 13
 #define WIN 14
 #define MUON 15
-
+#define CHANGE_QUES 16
 typedef struct user {
 	char account[32];
 	char password[32];

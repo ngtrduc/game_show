@@ -5,8 +5,9 @@
 #include <poll.h>
 #include "protocol.h"
 
+//duong dan den bo cau hoi
 
-
+//thoi gian cho viec tra loi 1 cau hoi
 #define TIME_OUT 15000
 char get_answer(int time_out)
 {
@@ -61,7 +62,7 @@ void them_cauhoi(){
 }
 struct cauhoi *lay_cauhoi(int set,int vi_tri)
 {
-	char bo_cauhoi[15]="bo_cauhoi";
+	char bo_cauhoi[32]="bo_cauhoi/bo_cauhoi";
 	char b[15];
     sprintf(b, "%d",set );
     strcat(bo_cauhoi,b);

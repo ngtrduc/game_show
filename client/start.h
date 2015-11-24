@@ -3,6 +3,72 @@
 
 
 int sockfd;
+int ngaunhien(int i)
+{
+    int j;
+    while(1){
+            srand(time(NULL));
+            j=1+rand()%4;
+            if(j!=i) break;
+    }
+    return j;
+}
+void in_dapan(cauhoi ch,int i){
+	switch(i){
+		case 1: printf("	A.%s\n",ch.dapan1); break;
+		case 2: printf("	B.%s\n",ch.dapan2); break;
+		case 3: printf("	C.%s\n",ch.dapan3); break;
+		case 4: printf("	D.%s\n",ch.dapan4); break;
+	}
+}
+void in_50_50(cauhoi ch,int i,int j)
+{
+	printf("  %s\n",ch.cauhoi);
+	if(i<j){
+		in_dapan(ch,i);
+		in_dapan(ch,j);
+	}
+	else{
+		in_dapan(ch,j);
+		in_dapan(ch,i);
+	}
+}
+int _50_50(cauhoi ch)
+{
+	char temp;
+	int j;
+	temp=ch.dapan_dung;
+	switch(temp){
+		case 'a': j=ngaunhien(1);
+				  in_50_50(ch,1,j);
+				  break;
+		case 'b': j=ngaunhien(2);
+				  in_50_50(ch,2,j);
+				  break;
+		case 'c': j=ngaunhien(3);
+				  in_50_50(ch,3,j);
+				  break;
+		case 'd': j=ngaunhien(4);
+				  in_50_50(ch,4,j);
+				  break;
+	}
+
+}
+void tro_giup(int t)
+{
+	switch(t){
+		case 0: printf("		Het quyen tro giup\n");
+				printf("\n		tro giup: 50-50:x   change-ques:x\n\n");break;
+		case 1: printf("		50-50 press key h\n");
+				printf("\n		tro giup: 50-50:o   change-ques:x\n\n");break;
+		case 2: printf("		change-ques press key g\n");
+				printf("\n		tro giup: 50-50:x   change-ques:o\n\n");break;
+		case 3: printf("		50-50 press key h\n");
+				printf("		change-ques press key g\n");
+				printf("\n		tro giup: 50-50:o   change-ques:o\n\n");break;
+	}
+}
+
 void delay()
 {
 	printf(" The game will start in: \n");
@@ -33,26 +99,34 @@ int score(int count)
 		case 14: return 10000;
 		case 15: return 15000;
 		default: return 0;
-
-
 	}
 }
-int start()
+int start(protocol p)
 {
 	int temp;
-	// printf("Hello,%s",p->u.account);
-	printf("1.Enter room and Watting for other user to play\n");
-	printf("2.Xem lich su\n");
-	printf("3.Quit\n");
-	scanf("%d",&temp);
-	while(getchar()!='\n');
-	if(temp == 1) {
+	while(1){
+		printf("Hello,%s\n",p.u.account);
+		printf("1.Enter room and Watting for other user to play\n");
+		printf("2.Xem lich su\n");
+		printf("3.Quit\n");
+		scanf("%d",&temp);
+		while(getchar()!='\n');
+		if(temp==3) break;
+		if(temp == 1) {
 		printf("Watting for other user....\n");
 		start_game();
+		}
+		if(temp==2);
+		temp=0;
 	}
+
 }
 int start_game()
 {
+	int check_50_50=1,check_ch_q=1;
+	int t=3;
+	char temp;
+
 	int count=0;
 	protocol p;
 	p.flag=ENTER_ROOM;
@@ -69,7 +143,8 @@ int start_game()
 							p.answer=get_answer(TIME_OUT);
 							
 							break;
-			case QUES: 	printf("		Correct!!\n");
+			case QUES: 	if((temp=='g')) printf("Thay doi cau hoi\n"); 
+						else printf("		Correct!!\n");
 						get_answer(1000);
 						if(check==1){
 							printf("Chuc mung ban da la nguoi choi chinh\n");
@@ -78,9 +153,26 @@ int start_game()
 							check=0;
 						}
 						printf("-Ques %d\n",p.count);
-						p.flag = ANSWER;
+						tro_giup(t);
 						in_cauhoi(p.ch);
-						p.answer=get_answer(TIME_OUT);
+						temp=get_answer(TIME_OUT);
+						if((temp=='h')&&(check_50_50==1)) {
+							t=t-1;
+							tro_giup(t);
+							check_50_50=_50_50(p.ch);
+							p.flag=ANSWER;
+							temp=get_answer(TIME_OUT);
+							count=p.count;
+						}
+						if((temp=='g')&&(check_ch_q==1)){
+							p.flag=CHANGE_QUES;
+							check_ch_q=0;
+							t=t-2;
+						}
+						else {
+							p.flag=ANSWER;
+							p.answer=temp;
+						}
 						count=p.count;
 						break;
 			case WRONG_ANSWER:  if(p.answer=='F'){

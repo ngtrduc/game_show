@@ -207,8 +207,7 @@ int start_server()
                                  else {p[i].flag=WRONG_ANSWER;p[i].count=1;a=0;j=0;}
 
                                  break;
-                    
-
+                    case CHANGE_QUES: p[i].flag=QUES;
                                     
                     }
                     if(p[i].flag==QUES){

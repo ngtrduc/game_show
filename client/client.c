@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <termios.h>
 #include "lib/error.h"
 #include "start.h"
 #include "lib/login_signup.h"
@@ -45,7 +46,7 @@ int main()
 	create_connection(5500,"127.0.0.1");
 	int n,t;
 	protocol p;
-	do{
+	while(1){
 		// bien t de check trang thai cua signup
 		t=-1;
 		printf("1.LOGIN\n");
@@ -53,6 +54,7 @@ int main()
 		printf("3.QUIT\n");
 		scanf("%d",&n);
 		while(getchar()!='\n');
+		if(n==3) break;
 		switch(n){
 			case 1: c_login(&p);
 					break;
@@ -63,16 +65,12 @@ int main()
 		send(sockfd,&p,sizeof(protocol),0);
 		recv(sockfd,&p,sizeof(protocol),0);
 		switch(p.flag){
-			case SUCCESS: printf("Login success!!\n"); start(); break;
+			case SUCCESS: printf("Login success!!\n"); start(p); break;
 			case NO_ACCOUNT: printf("%s",LOGIN_ERROR);
 							 break; 
 			case LOGIN_FAIL: printf("%s",LOGIN_ERROR);
 							 break; 
 			case SIGNUP_FAIL: printf("%s",SIGNUP_ERROR2);
-
 		}
-
-	}while(n!=3);
-	
-	
+	}
 }
