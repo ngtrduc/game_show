@@ -129,9 +129,10 @@ void in_lichsu()
 	while(1){
 		send(sockfd,&p,sizeof(protocol),0);
 		recv(sockfd,&p,sizeof(protocol),0);
+		if(p.flag==DONE) break;
 		printf("thoi gian: %s\n",p.sc.thoi_gian);
         printf("diem_so:%d\n",p.sc.score);
-		if(p.flag==DONE) break; 
+		 
 	}
 }
 int start_game()
