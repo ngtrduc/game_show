@@ -37,14 +37,19 @@ void s_login(protocol *p)
 
 void s_signup(protocol *p)
 {
-	FILE *fp;
+	FILE *fp,*fp1;
 	int temp;
+	char account[50]="user/";
 	temp=check_user(p->u);
 	if(temp==SIGNUP_SUCCESS) {
 		p->flag=SUCCESS;
 		fp=fopen("user.dat","ab");
 		fwrite(&(p->u),1,sizeof(user),fp);
 		fclose(fp);
+		strcat(account,p->u.account);
+		strcat(account,".dat");
+		fp1=fopen(account,"wb");
+		fclose(fp1);
 	}
 	else p->flag= SIGNUP_FAIL;
 }

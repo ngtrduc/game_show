@@ -8,14 +8,15 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/time.h> 
+#include <time.h>
 #include "lib/cauhoi.h"
 #include "lib/login_signup.h"
-
+#include "lib/score.h"
 
 #define FULL_CLIENT 10
 #define PORT 5500
 #define MAX_PLAYER 3
-#define MAX_QUES 4
+#define MAX_QUES 8
 //-----------------------------------------
 int listenSock;
 int client[FULL_CLIENT];
@@ -97,16 +98,16 @@ void check_main_p(protocol *p, cauhoi *ch)
 
 int start_server()
 {   
-
+    int scr;
     cauhoi *ch,*main_ch;
     int connSock,a=0;
-    int j=0,main_socket,i,k=0;
+    int j=0,main_socket,i,k=0,v=0;
     int max_sd,sd,nEvents;
     struct sockaddr_in address;  
     int addrlen = sizeof(address);
     for(i=0;i<=FULL_CLIENT;i++) client[i]=-1;
     protocol p[FULL_CLIENT];
-
+    char account[32][FULL_CLIENT];
 
     create_listenSock(PORT);
 
@@ -173,8 +174,10 @@ int start_server()
                 else{
                     switch(p[i].flag){
                     case LOGIN: s_login(&p[i]);
+                            if(p[i].flag==SUCCESS) strcpy(account[i],p[i].u.account); 
                             break;
                     case SIGNUP: s_signup(&p[i]);
+                            if(p[i].flag==SUCCESS) strcpy(account[i],p[i].u.account);
                             break;
                     case ENTER_ROOM:
                                     if((j==MAX_PLAYER)||(a==1)) p[i].flag=FULL;
@@ -196,23 +199,38 @@ int start_server()
                                         if(check_dapan(main_ch,p[i].answer)){
                                         if(p[i].count==MAX_QUES){
                                           p[i].flag=WIN;
+                                          scr=score(p[i].count);
+                                          save_score(account[i],scr);
                                           j=0;a=0;
                                           p[i].count=1;
+
                                         }else {
                                             p[i].flag=QUES;
                                             p[i].count++;
                                         }
                    
                                     }           
-                                 else {p[i].flag=WRONG_ANSWER;p[i].count=1;a=0;j=0;}
+                                 else {
+                                    p[i].flag=WRONG_ANSWER;
+                                    scr=score(p[i].count);
+                                    save_score(account[i],scr);
+                                    p[i].count=1;a=0;j=0;
+                                }
 
                                  break;
                     case CHANGE_QUES: p[i].flag=QUES;
+                    case VIEW_SCORE: if(get_score(account[i],&p[i],v)) v++;
+                                        else{
+                                            p[i].flag=DONE;
+                                            v=0;
+                                        }
+
                                     
                     }
                     if(p[i].flag==QUES){
                         srand(time(NULL));
-                        int vitri=rand()%9;
+                        int vitri=rand()%9;printf("%d\n",vitri );
+
                         main_ch=lay_cauhoi(p[i].count,vitri);
                         ch_to_pro(&p[i],main_ch[0]);
                     }

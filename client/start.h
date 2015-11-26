@@ -116,10 +116,23 @@ int start(protocol p)
 		printf("Watting for other user....\n");
 		start_game();
 		}
-		if(temp==2);
+		if(temp==2) in_lichsu();
 		temp=0;
 	}
 
+}
+void in_lichsu()
+{
+	protocol p;
+	p.flag=VIEW_SCORE;
+	printf("lich su nguoi choi\n");
+	while(1){
+		send(sockfd,&p,sizeof(protocol),0);
+		recv(sockfd,&p,sizeof(protocol),0);
+		printf("thoi gian: %s\n",p.sc.thoi_gian);
+        printf("diem_so:%d\n",p.sc.score);
+		if(p.flag==DONE) break; 
+	}
 }
 int start_game()
 {
@@ -141,7 +154,6 @@ int start_game()
 							p.flag = SUB_ANSWER;
 							in_cauhoi(p.ch);
 							p.answer=get_answer(TIME_OUT);
-							
 							break;
 			case QUES: 	if((temp=='g')) printf("Thay doi cau hoi\n"); 
 						else printf("		Correct!!\n");
@@ -195,9 +207,6 @@ int start_game()
 			printf("End Game :( :( :(\n\n");
 			break;
 			}
-		// if(p.flag == WIN){
-		// 	printf("CONGRATULATION, YOU ARE THE MILLIONAIRE!!!");
-		// }
 	}
 	printf("\n\nYour score: %d\n\n\n",score(count));
 }

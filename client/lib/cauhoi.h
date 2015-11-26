@@ -8,6 +8,15 @@
 //duong dan den bo cau hoi
 
 //thoi gian cho viec tra loi 1 cau hoi
+void get_thoigian(char *thoi_gian)
+{
+  time_t rawtime;
+  struct tm * timeinfo;
+
+  time ( &rawtime );
+  timeinfo = localtime ( &rawtime );
+  strcpy(thoi_gian,asctime (timeinfo));
+}
 #define TIME_OUT 15000
 char get_answer(int time_out)
 {

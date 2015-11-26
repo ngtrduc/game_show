@@ -6,9 +6,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <poll.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <termios.h>
+#include <time.h>
 #include "lib/error.h"
 #include "start.h"
 #include "lib/login_signup.h"
@@ -24,6 +26,7 @@
 //-----------------------------
 int create_connection(int PORT,char IP[10])
 {
+		
 	struct sockaddr_in serverAddr;
 	sockfd = socket(AF_INET,SOCK_STREAM,0);
 	if(sockfd<0){
@@ -65,12 +68,12 @@ int main()
 		send(sockfd,&p,sizeof(protocol),0);
 		recv(sockfd,&p,sizeof(protocol),0);
 		switch(p.flag){
-			case SUCCESS: printf("Login success!!\n"); start(p); break;
-			case NO_ACCOUNT: printf("%s",LOGIN_ERROR);
+			case SUCCESS: printf("\nLogin success!!\n"); start(p); break;
+			case NO_ACCOUNT: printf("\n%s",LOGIN_ERROR);
 							 break; 
-			case LOGIN_FAIL: printf("%s",LOGIN_ERROR);
+			case LOGIN_FAIL: printf("\n%s",LOGIN_ERROR);
 							 break; 
-			case SIGNUP_FAIL: printf("%s",SIGNUP_ERROR2);
+			case SIGNUP_FAIL: printf("\n%s",SIGNUP_ERROR2);
 		}
 	}
 }

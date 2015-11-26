@@ -14,6 +14,12 @@
 #define WIN 14
 #define MUON 15
 #define CHANGE_QUES 16
+#define VIEW_SCORE 17
+#define DONE 18
+typedef struct _score{
+	char thoi_gian[32];
+	int score;
+}diem;
 typedef struct user {
 	char account[32];
 	char password[32];
@@ -31,7 +37,6 @@ typedef struct protocol{
 	user u; // thong tin dang nhap
 	cauhoi ch;
 	char answer;
-	int score;
+	diem sc;
 	int count;
-
 }protocol;

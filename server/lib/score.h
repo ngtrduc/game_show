@@ -1,7 +1,24 @@
-#include <stdio.h>
-#include <time.h>
-#include <string.h>
-#include "lib/protocol.h"
+int score(int count)
+{
+	switch(count){
+		case 1: return 10;
+		case 2: return 20;
+		case 3: return 40;
+		case 4: return 80;
+		case 5: return 100;
+		case 6: return 200;
+		case 7: return 500;
+		case 8: return 800;
+		case 9: return 1000;
+		case 10: return 2000;
+		case 11: return 4000;
+		case 12: return 6000;
+		case 13: return 8000;
+		case 14: return 10000;
+		case 15: return 15000;
+		default: return 0;
+	}
+}
 void save_score(char account[32],int score)
 {
 	FILE *fp;
@@ -13,9 +30,7 @@ void save_score(char account[32],int score)
 	time ( &rawtime );
     timeinfo = localtime ( &rawtime );
     strcpy(sc.thoi_gian,asctime(timeinfo));	
-    printf("%s\n",sc.thoi_gian );
     sc.score=score;
-    printf("%d\n",sc.score );
     strcat(file_name,account);
 	strcat(file_name,".dat");
 	fp=fopen(file_name,"ab");
@@ -41,19 +56,4 @@ int get_score(char account[32],protocol *p,int i)
 		fclose(fp);
 		return 1;
 	}
-}
-int main()
-{
-	
-	protocol p;
-	int i=0;
-	while(1){
-		if(get_score("duc5",&p,i)){
-			i++;
-			printf("thoi igna: %s\n",p.sc.thoi_gian);
-			printf("diem_so:%d\n",p.sc.score);
-		}else break;
-	}
-	
-
 }
