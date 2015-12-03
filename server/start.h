@@ -194,7 +194,7 @@ int start_server()
                     case SIGNUP: s_signup(&p[i]);
                             if(p[i].flag==SUCCESS)
                             break;
-                    case ENTER_ROOM:
+                    case ENTER_ROOM: viewer[i]=-1;
                                     if((j==MAX_PLAYER)||(a==1)) p[i].flag=FULL;
                                     //else for(i=0;i<FULL_CLIENT;i++) viewer[i]=-1;
                                     if(j<MAX_PLAYER){
