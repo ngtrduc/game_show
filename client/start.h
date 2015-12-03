@@ -1,7 +1,7 @@
 #include "lib/cauhoi.h"
 #include "lib/test.h"
-
-
+#define VIEWER 20
+#define OUT 21
 int sockfd;
 int ngaunhien(int i)
 {
@@ -101,6 +101,7 @@ int score(int count)
 		default: return 0;
 	}
 }
+
 int start(protocol p)
 {
 	int temp;
@@ -108,16 +109,17 @@ int start(protocol p)
 		printf("Hello,%s\n",p.u.account);
 		printf("1.Enter room and Watting for other user to play\n");
 		printf("2.Xem lich su\n");
-		printf("3.Quit\n");
+		printf("3.khan gia\n");
+		printf("4.Quit\n");
 		scanf("%d",&temp);
 		while(getchar()!='\n');
-		if(temp==3) break;
+		if(temp==4) break;
 		if(temp == 1) {
 		printf("Watting for other user....\n");
 		start_game();
 		}
 		if(temp==2) in_lichsu();
-		temp=0;
+		if(temp==3) viewer();
 	}
 
 }
@@ -133,6 +135,28 @@ void in_lichsu()
 		printf("thoi gian: %s\n",p.sc.thoi_gian);
         printf("diem_so:%d\n",p.sc.score);
 		 
+	}
+}
+void viewer()
+{
+	protocol p;
+	p.flag=VIEWER;
+	send(sockfd,&p,sizeof(protocol),0);
+	while(1){
+		recv(sockfd,&p,sizeof(protocol),0);
+		if(p.flag==QUES){
+			printf("Player answer : %c \n",p.answer );
+			get_answer(1000);
+			in_cauhoi(p.ch);
+		}
+		if(p.flag==WRONG_ANSWER){
+			printf("Wrong answer\n");
+			break;
+		}
+		if(p.flag==WIN){
+			printf("Player win!!!\n");
+			break;
+		}
 	}
 }
 int start_game()

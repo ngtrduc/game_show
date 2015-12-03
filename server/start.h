@@ -17,10 +17,13 @@
 #define PORT 5500
 #define MAX_PLAYER 3
 #define MAX_QUES 8
+#define VIEWER 20
+#define OUT 21
 //-----------------------------------------
 int listenSock;
 int client[FULL_CLIENT];
 int player[MAX_PLAYER];
+int viewer[FULL_CLIENT];
 fd_set readfds;
 int check=0;
 
@@ -95,7 +98,17 @@ void check_main_p(protocol *p, cauhoi *ch)
     }else p->flag=WRONG_ANSWER;
 
 }
-
+void khan_gia(int flag,char answer,cauhoi *ch)
+{
+    int i;
+    protocol p;
+    p.flag=flag;
+    p.answer=answer;
+    ch_to_pro(&p,ch[0]);
+    for(i=0;i<FULL_CLIENT;i++){
+        if (viewer[i]>-1) send(viewer[i],&p,sizeof(protocol),0);
+    }
+}
 int start_server()
 {   
     int scr;
@@ -106,8 +119,8 @@ int start_server()
     struct sockaddr_in address;  
     int addrlen = sizeof(address);
     for(i=0;i<=FULL_CLIENT;i++) client[i]=-1;
+    for(i=0;i<=FULL_CLIENT;i++) viewer[i]=-1;
     protocol p[FULL_CLIENT];
-    char account[32][FULL_CLIENT];
 
     create_listenSock(PORT);
 
@@ -158,8 +171,10 @@ int start_server()
             if (FD_ISSET( sd , &readfds)) 
             {
                 
-                if (recv( sd , &p[i],sizeof(protocol),0) == 0) //m sua lai sau
+                if (recv( sd , &p[i],sizeof(protocol),0) == 0)
                 {
+
+                    viewer[i]=-1;
                     if(p[i].flag==ENTER_ROOM){
                         j--;
                         if(j==0) a=0;
@@ -167,26 +182,26 @@ int start_server()
                     if(p[i].flag==QUES) {
                         j=0;a=0;
                     }
-                    printf("Client disconnected...\n"); 
+                    printf("Client disconnected...,\n"); 
                     close( sd );
                     client[i] = -1;
                 } 
                 else{
                     switch(p[i].flag){
                     case LOGIN: s_login(&p[i]);
-                            if(p[i].flag==SUCCESS) strcpy(account[i],p[i].u.account); 
+                            if(p[i].flag==SUCCESS)  
                             break;
                     case SIGNUP: s_signup(&p[i]);
-                            if(p[i].flag==SUCCESS) strcpy(account[i],p[i].u.account);
+                            if(p[i].flag==SUCCESS)
                             break;
                     case ENTER_ROOM:
                                     if((j==MAX_PLAYER)||(a==1)) p[i].flag=FULL;
+                                    //else for(i=0;i<FULL_CLIENT;i++) viewer[i]=-1;
                                     if(j<MAX_PLAYER){
                                         player[j]=sd;j++;
                                         printf("we have %d player\n",j);
                                     }
                                     break;
-                                    //khi co 2 player chon enter_room thi se gui cau hoi cho 2 thang day
                     case SUB_ANSWER: check_main_p(&p[i],ch);
                                     k++;
                                     if(p[i].flag==WRONG_ANSWER){
@@ -199,8 +214,10 @@ int start_server()
                                         if(check_dapan(main_ch,p[i].answer)){
                                         if(p[i].count==MAX_QUES){
                                           p[i].flag=WIN;
+                                          khan_gia(WIN,p[i].answer,ch);
+                                          //for(i=0;i<FULL_CLIENT;i++) viewer[i]=-1;
                                           scr=score(p[i].count);
-                                          save_score(account[i],scr);
+                                          save_score(p[i].u.account,scr);
                                           j=0;a=0;
                                           p[i].count=1;
 
@@ -212,27 +229,31 @@ int start_server()
                                     }           
                                  else {
                                     p[i].flag=WRONG_ANSWER;
+                                    khan_gia(WRONG_ANSWER,p[i].answer,ch);
+                                    // for(i=0;i<FULL_CLIENT;i++) viewer[i]=-1;
                                     scr=score(p[i].count);
-                                    save_score(account[i],scr);
+                                    save_score(p[i].u.account,scr);
                                     p[i].count=1;a=0;j=0;
                                 }
 
                                  break;
-                    case CHANGE_QUES: p[i].flag=QUES;
-                    case VIEW_SCORE: if(get_score(account[i],&p[i],v)) v++;
+                    case CHANGE_QUES: p[i].flag=QUES; break;
+                    case VIEW_SCORE: if(get_score(p[i].u.account,&p[i],v)) v++;
                                         else{
                                             p[i].flag=DONE;
                                             v=0;
                                         }
+                                    break;
+                    case VIEWER: viewer[i]=sd;
 
                                     
                     }
                     if(p[i].flag==QUES){
                         srand(time(NULL));
                         int vitri=rand()%9;printf("%d\n",vitri );
-
                         main_ch=lay_cauhoi(p[i].count,vitri);
                         ch_to_pro(&p[i],main_ch[0]);
+                        khan_gia(QUES,p[i].answer,main_ch);
                     }
                     if((j==MAX_PLAYER)&&(a==0)){
                             srand(time(NULL));
@@ -240,7 +261,7 @@ int start_server()
                             play_phu(ch);
                             a=1;
                     }else{
-                         if(p[i].flag!=ENTER_ROOM) send(sd,&p[i],sizeof(protocol),0);
+                         if((p[i].flag!=ENTER_ROOM)&&(p[i].flag!=VIEWER)) send(sd,&p[i],sizeof(protocol),0);
                     }
                    
                 }
