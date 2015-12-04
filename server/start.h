@@ -17,23 +17,24 @@
 #define PORT 5500
 #define MAX_PLAYER 3
 #define MAX_QUES 8
-#define VIEWER 20
-#define OUT 21
 //-----------------------------------------
 int listenSock;
+//mang client de thao tac vs socket cua client ket noi den
 int client[FULL_CLIENT];
+//mang player de thao tac vs socket cua nguoi choi 
 int player[MAX_PLAYER];
+//mang viewer de thao tac vs socket cua khan gia ket noi den
 int viewer[FULL_CLIENT];
 fd_set readfds;
+//bien check kiem tra nguoi choi nao tra loi nhanh nhat
 int check=0;
 
 //-----------------------------------------------
 
 
-
+// tao listen Sock 
 int create_listenSock(int port)
 {
-    //int master_socket;
     struct sockaddr_in address;
     if( (listenSock = socket(AF_INET , SOCK_STREAM , 0)) == 0) 
     {
@@ -58,6 +59,8 @@ int create_listenSock(int port)
     puts("Waiting for connections ...");
     return 0;
 }
+//--------------------------------
+// chuyen noi dung cau hoi vao giao thuc de chuyen di
 void ch_to_pro(protocol *p,cauhoi ch)
 {
     strcpy(p->ch.cauhoi,ch.cauhoi);
@@ -67,11 +70,13 @@ void ch_to_pro(protocol *p,cauhoi ch)
     strcpy(p->ch.dapan4,ch.dapan4);
     p->ch.dapan_dung=ch.dapan_dung;
 }
+//phan choi cau hoi phu
+//nhan cau hoi vao va chuyen den cac client da~ ket noi
+//vs tu cach la player
 void play_phu(cauhoi *ch)
 {
     protocol p;
     int i;
-    //int vitri=rand()%10;
     p.flag=SUB_QUES;
     ch_to_pro(&p,ch[0]);
 
@@ -80,12 +85,17 @@ void play_phu(cauhoi *ch)
     }
     
 }
-
+//kiem tra dap an dung hay sai
+// dung return 1
+//sai return 0
 int check_dapan(cauhoi *ch,char dap_an)
 {
     if (ch->dapan_dung==dap_an) return 1;
     else return 0;
 }
+//chon ra nguoi choi chinh
+//bien check dung de kiem tra nguoi choi nao
+//tra loi nhanh nhat
 void check_main_p(protocol *p, cauhoi *ch)
 {
     if(check_dapan(ch,p->answer)){
@@ -96,8 +106,9 @@ void check_main_p(protocol *p, cauhoi *ch)
         }else p->flag=MUON;
 
     }else p->flag=WRONG_ANSWER;
-
 }
+//ham gui noi dung cau hoi va dap an cua nguoi choi chinh
+//cho khan gia
 void khan_gia(int flag,char answer,cauhoi *ch)
 {
     int i;
@@ -108,28 +119,39 @@ void khan_gia(int flag,char answer,cauhoi *ch)
     for(i=0;i<FULL_CLIENT;i++){
         if (viewer[i]>-1) send(viewer[i],&p,sizeof(protocol),0);
     }
+    if((flag==WRONG_ANSWER)||(flag==WIN)){
+        for (i = 0; i < FULL_CLIENT; i++) viewer[i]=-1;
+    }
 }
+//Server bat dau khoi dong
 int start_server()
 {   
-    int scr;
-    cauhoi *ch,*main_ch;
-    int connSock,a=0;
-    int j=0,main_socket,i,k=0,v=0;
-    int max_sd,sd,nEvents;
+    //--------------------------------------
+    int scr; // diem cua nguoi choi
+    int j=0,a=0,i,k=0,v=0; //cac bien check trang thai
+    int connSock,max_sd,sd,nEvents;
     struct sockaddr_in address;  
     int addrlen = sizeof(address);
+
+    //khoi tao client vs viewer =-1
     for(i=0;i<=FULL_CLIENT;i++) client[i]=-1;
     for(i=0;i<=FULL_CLIENT;i++) viewer[i]=-1;
+    //khai bao 1 mang cac giao thuc de thao tac vs tung client
+    //ket noi den
     protocol p[FULL_CLIENT];
-
+    cauhoi *ch,*main_ch;
+    //----------------------------------------
+    //tao listen sock de thao tac
     create_listenSock(PORT);
 
     while(1)
     {
+        // phan xu ly ben server de tao lien ket vs cac client
+        //---------------------------------------------
         FD_ZERO(&readfds);
         FD_SET(listenSock, &readfds);
         max_sd = listenSock;
-            for ( i = 0 ; i < FULL_CLIENT ; i++) 
+        for ( i = 0 ; i < FULL_CLIENT ; i++) 
         {
             
             sd = client[i];
@@ -139,7 +161,7 @@ int start_server()
                 max_sd = sd;
         }
         nEvents = select( max_sd + 1 , &readfds , NULL , NULL , NULL);
-            if (nEvents < 0) printf("select error...\n");
+        if (nEvents < 0) printf("select error...\n");
         if (FD_ISSET(listenSock, &readfds)) 
         {
             if ((connSock = accept(listenSock, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0)
@@ -147,8 +169,7 @@ int start_server()
                 perror("accept");
                 exit(EXIT_FAILURE);
             }
-          
-            
+
             printf("New connection , socket fd is %d \n" , connSock);
             // them socket vao socket list
             for (i = 0; i < FULL_CLIENT; i++) 
@@ -164,6 +185,8 @@ int start_server()
             }
         }
 
+        //-------------------------------------------------------
+        // bat dau vao phan thao tac du lieu vs client
         for (i = 0; i < FULL_CLIENT; i++) 
         {
             sd = client[i];
@@ -173,13 +196,14 @@ int start_server()
                 
                 if (recv( sd , &p[i],sizeof(protocol),0) == 0)
                 {
-
+                    //neu client disconnect thi tuy vao trang thai
+                    //cua no thi tra ve gia tri rieng
                     viewer[i]=-1;
                     if(p[i].flag==ENTER_ROOM){
                         j--;
                         if(j==0) a=0;
                     }
-                    if(p[i].flag==QUES) {
+                    if(p[i].flag==QUES){
                         j=0;a=0;
                     }
                     printf("Client disconnected...,\n"); 
@@ -188,15 +212,12 @@ int start_server()
                 } 
                 else{
                     switch(p[i].flag){
-                    case LOGIN: s_login(&p[i]);
-                            if(p[i].flag==SUCCESS)  
-                            break;
-                    case SIGNUP: s_signup(&p[i]);
-                            if(p[i].flag==SUCCESS)
-                            break;
-                    case ENTER_ROOM: viewer[i]=-1;
+                    case LOGIN: s_login(&p[i]);break;
+                            
+                    case SIGNUP: s_signup(&p[i]);break;
+                            
+                    case ENTER_ROOM:
                                     if((j==MAX_PLAYER)||(a==1)) p[i].flag=FULL;
-                                    //else for(i=0;i<FULL_CLIENT;i++) viewer[i]=-1;
                                     if(j<MAX_PLAYER){
                                         player[j]=sd;j++;
                                         printf("we have %d player\n",j);
@@ -210,12 +231,12 @@ int start_server()
                                     }
                                     if(k==MAX_PLAYER){k=0;check=0;}
                                     break;
-                    case ANSWER: 
+                    case ANSWER:
                                         if(check_dapan(main_ch,p[i].answer)){
                                         if(p[i].count==MAX_QUES){
                                           p[i].flag=WIN;
                                           khan_gia(WIN,p[i].answer,ch);
-                                          //for(i=0;i<FULL_CLIENT;i++) viewer[i]=-1;
+                                          //for(l=0;l<FULL_CLIENT;l++) viewer[l]=-1;
                                           scr=score(p[i].count);
                                           save_score(p[i].u.account,scr);
                                           j=0;a=0;
@@ -230,7 +251,7 @@ int start_server()
                                  else {
                                     p[i].flag=WRONG_ANSWER;
                                     khan_gia(WRONG_ANSWER,p[i].answer,ch);
-                                    // for(i=0;i<FULL_CLIENT;i++) viewer[i]=-1;
+                                    //for(l=0;l<FULL_CLIENT;l++) viewer[l]=-1;
                                     scr=score(p[i].count);
                                     save_score(p[i].u.account,scr);
                                     p[i].count=1;a=0;j=0;

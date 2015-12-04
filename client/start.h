@@ -1,7 +1,5 @@
 #include "lib/cauhoi.h"
 #include "lib/test.h"
-#define VIEWER 20
-#define OUT 21
 int sockfd;
 int ngaunhien(int i)
 {

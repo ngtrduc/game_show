@@ -1,29 +1,20 @@
-#define LOGIN 1
-#define SIGNUP 2
-#define SUCCESS 3
-#define LOGIN_FAIL 4
-#define SIGNUP_FAIL 5
-#define SUB_QUES 6
-#define QUES 7
-#define ANSWER 8
-#define ENTER_ROOM 9
-#define WRONG_ANSWER 10
-#define SUB_ANSWER 11
-#define NO_ACCOUNT 12
-#define FULL 13
-#define WIN 14
-#define MUON 15
-#define CHANGE_QUES 16
-#define VIEW_SCORE 17
-#define DONE 18
+// danh sach cac flag duoc su dung cho giao thuc
+enum{
+	LOGIN,SIGNUP,SUCCESS,LOGIN_FAIL,SIGNUP_FAIL,SUB_QUES,
+	QUES,ANSWER,ENTER_ROOM,WRONG_ANSWER,SUB_ANSWER,NO_ACCOUNT,
+	FULL,WIN,MUON,CHANGE_QUES,VIEW_SCORE,DONE,VIEWER,OUT
+};
+// luu tru diem so va thoi gian cua nguoi choi
 typedef struct _score{
 	char thoi_gian[32];
 	int score;
 }diem;
+//thong tin dang nhap
 typedef struct user {
 	char account[32];
 	char password[32];
 }user;
+//thong tin ve cau hoi
 typedef struct cauhoi{
 	char cauhoi[100];
 	char dapan1[20];
@@ -32,9 +23,10 @@ typedef struct cauhoi{
 	char dapan4[20];
 	char dapan_dung;
 }cauhoi;
+//giao thuc trao chuyen giua client va server
 typedef struct protocol{
-	int flag; // 
-	user u; // thong tin dang nhap
+	int flag; 
+	user u; 
 	cauhoi ch;
 	char answer;
 	diem sc;

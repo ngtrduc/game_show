@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "start.h"
-#define MAX_CLIENT 4
 
 int main()
 {
