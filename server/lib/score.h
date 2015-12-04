@@ -1,3 +1,4 @@
+// phan tinh diem, luu diem, lay diem cho nguoi choi
 int score(int count)
 {
 	switch(count){

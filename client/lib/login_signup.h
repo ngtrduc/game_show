@@ -1,3 +1,6 @@
+//------------------------------------
+//cac ham de an mat khau tren terminal
+
 static struct termios old, new;
 void initTermios(int echo) {
 	tcgetattr(0, &old);                       
@@ -35,67 +38,10 @@ int get_pass(char pass[]){
 	pass[i]='\0';
 	return 1;
 }
-
+//---------------------------------------------
 
 #define SIGNUP_SUCCESS 12
-int check_user(user u)
-{
-
-	FILE *fp;
-	user temp;
-	fp=fopen("user.dat","rb");
-	while(!feof(fp))
-	{
-		fread(&temp,1,sizeof(user),fp);
-		if(!strcmp(u.account,temp.account))
-		{
-			if(!strcmp(u.password,temp.password)) {
-				fclose(fp);
-				return SUCCESS;
-			}
-			else {
-				fclose(fp);
-				return LOGIN_FAIL;
-			}
-		}
-	}
-	fclose(fp);
-	return SIGNUP_SUCCESS;
-}
-
-
-void s_login(protocol *p)
-{
-	int temp;
-	temp = check_user(p->u);
-	if(temp!=SIGNUP_SUCCESS) p->flag=temp;
-	else p->flag=NO_ACCOUNT;
-
-}
-
-void s_signup(protocol *p)
-{
-	FILE *fp,*fp1;
-	int temp;
-	char account[50]="user/";
-	temp=check_user(p->u);
-	if(temp==SIGNUP_SUCCESS) {
-		p->flag=SUCCESS;
-		fp=fopen("user.dat","ab");
-		fwrite(&(p->u),1,sizeof(user),fp);
-		fclose(fp);
-		strcat(account,p->u.account);
-		strcat(account,".dat");
-		fp1=fopen(account,"wb");
-		fclose(fp1);
-	}
-	else p->flag= SIGNUP_FAIL;
-}
-
-
-
-/// FOR CLIENT
-
+//tao giao dien dang nhap va luu vao giao thuc chuyen di
 
 void c_login(protocol *p)
 {
@@ -105,7 +51,7 @@ void c_login(protocol *p)
 	printf("Password:\n");
 	get_pass(p->u.password);
 }
-
+//tao giao dien dang nhap va luu vao giao thuc chuyen di
 int c_signup(protocol *p)
 {
 	char t;
@@ -116,13 +62,14 @@ int c_signup(protocol *p)
 		gets(p->u.account);
 		printf("Password:\n");
 		get_pass(p->u.password);
-		printf("Comfirmation:\n");
+		printf("\nComfirmation:\n");
 		get_pass(temp);
 		if(!strcmp(p->u.password,temp)){
 			return SUCCESS;
 		}
 		else {
-			printf("ban co muon nhap lai khong(y/n)\n");
+			printf("%s\n",SIGNUP_ERROR1);
+			printf("Do you want enter again(y/n)\n");
 			t=getchar();
 			while(getchar()!='\n');
 		}

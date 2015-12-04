@@ -1,5 +1,7 @@
 
 #define SIGNUP_SUCCESS 12
+
+// kiem tra user da ton tai hay chua
 int check_user(user u)
 {
 
@@ -25,7 +27,7 @@ int check_user(user u)
 	return SIGNUP_SUCCESS;
 }
 
-
+// ham kiem tra login
 void s_login(protocol *p)
 {
 	int temp;
@@ -34,7 +36,8 @@ void s_login(protocol *p)
 	else p->flag=NO_ACCOUNT;
 
 }
-
+//ham kiem tra signup, dong thoi moi khi signup se tao ra 1 file
+//luu diem cho nguoi choi
 void s_signup(protocol *p)
 {
 	FILE *fp,*fp1;
@@ -53,46 +56,6 @@ void s_signup(protocol *p)
 	}
 	else p->flag= SIGNUP_FAIL;
 }
-
-
-
-/// FOR CLIENT
-
-
-void c_login(protocol *p)
-{
-	p->flag = LOGIN;
-	printf("Account:\n");
-	gets(p->u.account);
-	printf("Password:\n");
-	gets(p->u.password);
-}
-
-int c_signup(protocol *p)
-{
-	char t;
-	char temp[32];
-	p->flag = SIGNUP;
-	do{
-
-		printf("Account:\n");
-		gets(p->u.account);
-		printf("Password:\n");
-		gets(p->u.password);
-		printf("Comfirmation:\n");
-		gets(temp);
-		if(!strcmp(p->u.password,temp)){
-			return SUCCESS;
-		}
-		else {
-			printf("ban co muon nhap lai khong(y/n)\n");
-			t=getchar();
-			while(getchar()!='\n');
-		}
-	}while(t=='y');
-	return SIGNUP_FAIL;
-}
-
 
 
 

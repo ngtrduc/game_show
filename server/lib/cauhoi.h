@@ -1,24 +1,20 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include "protocol.h"
 #include <unistd.h>
 #include <poll.h>
 
 
 #define TIME_OUT 15000
-char get_answer()
+// chuyen noi dung cau hoi vao giao thuc de chuyen di
+void ch_to_pro(protocol *p,cauhoi ch)
 {
-    struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
-    char answer;
-
-    if( poll(&mypoll, 1, TIME_OUT) )
-    {
-        scanf("%c", &answer);
-        return answer;
-    }
-    else return 'F';
+    strcpy(p->ch.cauhoi,ch.cauhoi);
+    strcpy(p->ch.dapan1,ch.dapan1);
+    strcpy(p->ch.dapan2,ch.dapan2);
+    strcpy(p->ch.dapan3,ch.dapan3);
+    strcpy(p->ch.dapan4,ch.dapan4);
+    p->ch.dapan_dung=ch.dapan_dung;
 }
+// tao them 1 bo cau hoi moi
 struct cauhoi nhap_cauhoi(i)
 {
 	struct cauhoi ch;
@@ -57,6 +53,7 @@ void them_cauhoi(){
 	}while(!strcmp(temp,"y"));
 	fclose(fp);
 }
+// lay cau hoi tu file ra
 struct cauhoi *lay_cauhoi(int set,int vi_tri)
 {
 	char bo_cauhoi[32]="bo_cauhoi/bo_cauhoi";
@@ -80,6 +77,7 @@ struct cauhoi *lay_cauhoi(int set,int vi_tri)
 	fclose(fp);
 	return ch;
 }
+//in cau hoi
 void in_cauhoi(cauhoi ch)
 {
 	printf("%s\n",ch.cauhoi );
@@ -88,4 +86,3 @@ void in_cauhoi(cauhoi ch)
 	printf("3.%s\n",ch.dapan3);
 	printf("4.%s\n",ch.dapan4);
 }
-

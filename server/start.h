@@ -27,7 +27,7 @@ int player[MAX_PLAYER];
 int viewer[FULL_CLIENT];
 fd_set readfds;
 //bien check kiem tra nguoi choi nao tra loi nhanh nhat
-int check=0;
+int check=0,j=0,a=0,i,k=0,v=0; //cac bien check trang thai
 
 //-----------------------------------------------
 
@@ -60,23 +60,14 @@ int create_listenSock(int port)
     return 0;
 }
 //--------------------------------
-// chuyen noi dung cau hoi vao giao thuc de chuyen di
-void ch_to_pro(protocol *p,cauhoi ch)
-{
-    strcpy(p->ch.cauhoi,ch.cauhoi);
-    strcpy(p->ch.dapan1,ch.dapan1);
-    strcpy(p->ch.dapan2,ch.dapan2);
-    strcpy(p->ch.dapan3,ch.dapan3);
-    strcpy(p->ch.dapan4,ch.dapan4);
-    p->ch.dapan_dung=ch.dapan_dung;
-}
+
 //phan choi cau hoi phu
 //nhan cau hoi vao va chuyen den cac client da~ ket noi
 //vs tu cach la player
 void play_phu(cauhoi *ch)
 {
     protocol p;
-    int i;
+    int i;   
     p.flag=SUB_QUES;
     ch_to_pro(&p,ch[0]);
 
@@ -123,12 +114,63 @@ void khan_gia(int flag,char answer,cauhoi *ch)
         for (i = 0; i < FULL_CLIENT; i++) viewer[i]=-1;
     }
 }
+// choi du nguoi choi thi bat dau gui cau ho phu
+// khi da du roi, neu co nguoi choi khac dang nhap
+// se bao full phong
+void enter_room(protocol *p,int sd)
+{
+        if((j==MAX_PLAYER)||(a==1)) p->flag=FULL;
+            if(j<MAX_PLAYER){
+                player[j]=sd;j++;
+                printf("we have %d player\n",j);
+            }
+}
+// check dap an cac nguoi
+// tra loi nhanh nhat duoc choi tiep
+void sub_answer(protocol *p,cauhoi *ch)
+{
+    check_main_p(p,ch);
+    k++;
+    if(p->flag==WRONG_ANSWER){
+        j--;
+        if(j==0) a=0;
+    }
+    if(k==MAX_PLAYER){k=0;check=0;}
+}
+// check dap an nguoi choi chinh,
+//tra loi dung thi chuyen cau tiep theo
+//dong thoi gui noi dung cau hoi cho khan gia
+// neu chien thang hoac tra loi sai thi luu diem
+void answer(protocol *p,cauhoi *ch)
+{
+    int scr;
+    if(check_dapan(ch,p->answer)){
+    if(p->count==MAX_QUES){
+          p->flag=WIN;
+          khan_gia(WIN,p->answer,ch);
+          scr=score(p->count);
+          save_score(p->u.account,scr);
+          j=0;a=0;
+          p->count=1;
+
+        }else {
+            p->flag=QUES;
+            p->count++;
+        }
+    }           
+    else {
+        p->flag=WRONG_ANSWER;
+        khan_gia(WRONG_ANSWER,p->answer,ch);
+        scr=score(p->count);
+        save_score(p->u.account,scr);
+        p->count=1;a=0;j=0;
+    }
+
+}
 //Server bat dau khoi dong
 int start_server()
 {   
     //--------------------------------------
-    int scr; // diem cua nguoi choi
-    int j=0,a=0,i,k=0,v=0; //cac bien check trang thai
     int connSock,max_sd,sd,nEvents;
     struct sockaddr_in address;  
     int addrlen = sizeof(address);
@@ -216,48 +258,12 @@ int start_server()
                             
                     case SIGNUP: s_signup(&p[i]);break;
                             
-                    case ENTER_ROOM:
-                                    if((j==MAX_PLAYER)||(a==1)) p[i].flag=FULL;
-                                    if(j<MAX_PLAYER){
-                                        player[j]=sd;j++;
-                                        printf("we have %d player\n",j);
-                                    }
-                                    break;
-                    case SUB_ANSWER: check_main_p(&p[i],ch);
-                                    k++;
-                                    if(p[i].flag==WRONG_ANSWER){
-                                        j--;
-                                        if(j==0) a=0;
-                                    }
-                                    if(k==MAX_PLAYER){k=0;check=0;}
-                                    break;
-                    case ANSWER:
-                                        if(check_dapan(main_ch,p[i].answer)){
-                                        if(p[i].count==MAX_QUES){
-                                          p[i].flag=WIN;
-                                          khan_gia(WIN,p[i].answer,ch);
-                                          //for(l=0;l<FULL_CLIENT;l++) viewer[l]=-1;
-                                          scr=score(p[i].count);
-                                          save_score(p[i].u.account,scr);
-                                          j=0;a=0;
-                                          p[i].count=1;
-
-                                        }else {
-                                            p[i].flag=QUES;
-                                            p[i].count++;
-                                        }
-                   
-                                    }           
-                                 else {
-                                    p[i].flag=WRONG_ANSWER;
-                                    khan_gia(WRONG_ANSWER,p[i].answer,ch);
-                                    //for(l=0;l<FULL_CLIENT;l++) viewer[l]=-1;
-                                    scr=score(p[i].count);
-                                    save_score(p[i].u.account,scr);
-                                    p[i].count=1;a=0;j=0;
-                                }
-
-                                 break;
+                    case ENTER_ROOM: enter_room(&p[i],sd); break;
+                                
+                    case SUB_ANSWER: sub_answer(&p[i],ch); break;
+                                    
+                    case ANSWER: answer(&p[i],main_ch); break;
+                                 
                     case CHANGE_QUES: p[i].flag=QUES; break;
                     case VIEW_SCORE: if(get_score(p[i].u.account,&p[i],v)) v++;
                                         else{
@@ -271,18 +277,19 @@ int start_server()
                     }
                     if(p[i].flag==QUES){
                         srand(time(NULL));
-                        int vitri=rand()%9;printf("%d\n",vitri );
+                        int vitri=rand()%9;
                         main_ch=lay_cauhoi(p[i].count,vitri);
                         ch_to_pro(&p[i],main_ch[0]);
                         khan_gia(QUES,p[i].answer,main_ch);
                     }
                     if((j==MAX_PLAYER)&&(a==0)){
-                            srand(time(NULL));
-                            ch=lay_cauhoi(1,rand()%9);
-                            play_phu(ch);
-                            a=1;
+                        srand(time(NULL));
+                        ch=lay_cauhoi(1,rand()%9);
+                        play_phu(ch);
+                        a=1;
                     }else{
-                         if((p[i].flag!=ENTER_ROOM)&&(p[i].flag!=VIEWER)) send(sd,&p[i],sizeof(protocol),0);
+                         if((p[i].flag!=ENTER_ROOM)&&(p[i].flag!=VIEWER)) 
+                            send(sd,&p[i],sizeof(protocol),0);
                     }
                    
                 }
