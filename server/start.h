@@ -276,7 +276,6 @@ int start_server()
                                         }
                                     break;
                     case VIEWER: viewer[i]=sd;
-
                                     
                     }
                     if(p[i].flag==QUES){
