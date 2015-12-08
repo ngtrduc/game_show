@@ -141,7 +141,7 @@ void sub_answer(protocol *p,cauhoi *ch)
 //tra loi dung thi chuyen cau tiep theo
 //dong thoi gui noi dung cau hoi cho khan gia
 // neu chien thang hoac tra loi sai thi luu diem
-void answer(protocol *p,cauhoi *ch)
+void answer(char account[32],protocol *p,cauhoi *ch)
 {
     int scr;
     if(check_dapan(ch,p->answer)){
@@ -149,7 +149,7 @@ void answer(protocol *p,cauhoi *ch)
           p->flag=WIN;
           khan_gia(WIN,p->answer,ch);
           scr=score(p->count);
-          save_score(p->u.account,scr);
+          save_score(account,scr);
           j=0;a=0;
           p->count=1;
 
@@ -162,7 +162,8 @@ void answer(protocol *p,cauhoi *ch)
         p->flag=WRONG_ANSWER;
         khan_gia(WRONG_ANSWER,p->answer,ch);
         scr=score(p->count);
-        save_score(p->u.account,scr);
+        printf("%d\t%s",scr,account);
+        save_score(account,scr);
         p->count=1;a=0;j=0;
     }
 
@@ -182,6 +183,7 @@ int start_server()
     //ket noi den
     protocol p[FULL_CLIENT];
     cauhoi *ch,*main_ch;
+    char account[32][FULL_CLIENT];
     //----------------------------------------
     //tao listen sock de thao tac
     create_listenSock(PORT);
@@ -254,18 +256,20 @@ int start_server()
                 } 
                 else{
                     switch(p[i].flag){
-                    case LOGIN: s_login(&p[i]);break;
+                    case LOGIN: s_login(&p[i]); strcpy(account[i],p[i].u.account);
+                                break;
                             
-                    case SIGNUP: s_signup(&p[i]);break;
+                    case SIGNUP: s_signup(&p[i]); strcpy(account[i],p[i].u.account);
+                                break;
                             
                     case ENTER_ROOM: enter_room(&p[i],sd); break;
                                 
                     case SUB_ANSWER: sub_answer(&p[i],ch); break;
                                     
-                    case ANSWER: answer(&p[i],main_ch); break;
+                    case ANSWER: answer(account[i],&p[i],main_ch); break;
                                  
                     case CHANGE_QUES: p[i].flag=QUES; break;
-                    case VIEW_SCORE: if(get_score(p[i].u.account,&p[i],v)) v++;
+                    case VIEW_SCORE: if(get_score(account[i],&p[i],v)) v++;
                                         else{
                                             p[i].flag=DONE;
                                             v=0;
