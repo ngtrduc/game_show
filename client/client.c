@@ -44,6 +44,16 @@ int create_connection(int PORT,char IP[10])
 	printf("server duoc ket noi thanh cong ...\n");
 	return SUCCESS;
 }
+void in_menu()
+{
+	printf("*************----------------**************\n");
+	printf("*****           1.LOGIN               *****\n");
+	printf("*****           2.SIGNUP              *****\n");
+	printf("*****           3.QUIT                *****\n");
+	printf("*************----------------**************\n");
+	printf("	Please enter your choice : \n");
+	printf("      **: ");
+}
 int main()
 {
 	create_connection(5500,"127.0.0.1");
@@ -52,9 +62,7 @@ int main()
 	while(1){
 		// bien t de check trang thai cua signup
 		t=-1;
-		printf("1.LOGIN\n");
-		printf("2.SIGNUP\n");		
-		printf("3.QUIT\n");
+		in_menu();
 		scanf("%d",&n);
 		while(getchar()!='\n');
 		if(n==3) break;

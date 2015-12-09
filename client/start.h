@@ -24,12 +24,14 @@ void in_lichsu()
 	protocol p;
 	p.flag=VIEW_SCORE;
 	printf("Lich su nguoi choi\n");
+	printf("--------------------------------------------\n");
 	while(1){
 		send(sockfd,&p,sizeof(protocol),0);
 		recv(sockfd,&p,sizeof(protocol),0);
 		if(p.flag==DONE) break;
 		printf("Thoi gian: %s\n",p.sc.thoi_gian);
         printf("Diem so:%d\n",p.sc.score);
+        printf("----------------------------------------\n");
 		 
 	}
 }
@@ -62,11 +64,15 @@ int start(protocol p)
 {
 	int temp;
 	while(1){
-		printf("Hello,%s\n",p.u.account);
+		printf("***************--------------------****************\n");
+		printf("Hello, %s\n\n",p.u.account);
 		printf("1.Enter room and Watting for other user to play\n");
 		printf("2.Xem lich su\n");
 		printf("3.khan gia\n");
 		printf("4.Quit\n");
+		printf("**************---------------------****************\n");
+		printf("	Enter you choice : \n");
+		printf("	   **:  ");
 		scanf("%d",&temp);
 		while(getchar()!='\n');
 		if(temp==4) break;
